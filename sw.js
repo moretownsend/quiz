@@ -7,7 +7,9 @@ const ASSETS = [
   "./assets/icon.svg",
   "./manifest.webmanifest",
   "./data/papers.json",
-  "./data/questions.json"
+  "./data/questions.json",
+  "./data/papers.js",
+  "./data/questions.js"
 ];
 
 self.addEventListener("install", (event) => {

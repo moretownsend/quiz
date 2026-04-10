@@ -4,6 +4,8 @@ require "json"
 ROOT = File.expand_path("..", __dir__)
 papers_path = File.join(ROOT, "data", "papers.json")
 output_path = File.join(ROOT, "data", "questions.json")
+papers_js_path = File.join(ROOT, "data", "papers.js")
+questions_js_path = File.join(ROOT, "data", "questions.js")
 
 papers = JSON.parse(File.read(papers_path))
 
@@ -137,4 +139,6 @@ papers.each do |paper|
 end
 
 File.write(output_path, JSON.pretty_generate(questions))
+File.write(papers_js_path, "window.ECON_MILLIONAIRE_PAPERS = #{JSON.generate(papers)};\n")
+File.write(questions_js_path, "window.ECON_MILLIONAIRE_QUESTIONS = #{JSON.generate(questions)};\n")
 puts "Generated #{questions.length} unique questions into #{output_path}"

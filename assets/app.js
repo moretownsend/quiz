@@ -82,10 +82,7 @@ boot().catch((error) => {
 });
 
 async function boot() {
-  const [questions, papers] = await Promise.all([
-    fetchJSON("./data/questions.json"),
-    fetchJSON("./data/papers.json")
-  ]);
+  const [questions, papers] = await Promise.all([loadQuestions(), loadPapers()]);
   state.allQuestions = questions;
   state.allPapers = papers;
   hydrateSourcePreferences();
@@ -103,6 +100,20 @@ async function fetchJSON(path) {
     throw new Error(`Failed to load ${path}`);
   }
   return response.json();
+}
+
+async function loadQuestions() {
+  if (Array.isArray(window.ECON_MILLIONAIRE_QUESTIONS)) {
+    return window.ECON_MILLIONAIRE_QUESTIONS;
+  }
+  return fetchJSON("./data/questions.json");
+}
+
+async function loadPapers() {
+  if (Array.isArray(window.ECON_MILLIONAIRE_PAPERS)) {
+    return window.ECON_MILLIONAIRE_PAPERS;
+  }
+  return fetchJSON("./data/papers.json");
 }
 
 function hydrateSourcePreferences() {
@@ -601,7 +612,7 @@ function exportHistory() {
 }
 
 async function registerPwa() {
-  if ("serviceWorker" in navigator) {
+  if ("serviceWorker" in navigator && window.location.protocol !== "file:") {
     await navigator.serviceWorker.register("./sw.js");
   }
 }
