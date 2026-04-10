@@ -7,7 +7,7 @@ output_path = File.join(ROOT, "data", "questions.json")
 papers_js_path = File.join(ROOT, "data", "papers.js")
 questions_js_path = File.join(ROOT, "data", "questions.js")
 
-papers = JSON.parse(File.read(papers_path))
+papers = JSON.parse(File.read(papers_path)).select { |paper| paper["enabled"] != false }
 
 TOPIC_DISTRACTORS = {
   "Classical economics" => ["sticky prices", "rational bubbles", "search frictions", "deposit insurance"],
