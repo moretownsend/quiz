@@ -19,7 +19,6 @@
       content="A mobile-friendly academic economics quiz with weekly paper-based questions."
     />
     <title>Economics Society Academic Quiz</title>
-    <link rel="manifest" href="./manifest.webmanifest?v=20260410c" />
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./assets/icon.svg" />
     <link rel="stylesheet" href="./assets/styles.css?v=20260410c" />
@@ -91,7 +90,6 @@
             <p id="results-summary"></p>
             <div class="results-actions">
               <button id="review-attempt" class="primary-button" type="button">Review Answers</button>
-              <button id="install-app" class="ghost-button hidden" type="button">Add to iPhone Home Screen</button>
             </div>
           </section>
 
@@ -126,13 +124,6 @@
       </button>
     </template>
 
-    <script>
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.getRegistrations().then((registrations) => {
-          registrations.forEach((registration) => registration.unregister());
-        });
-      }
-    </script>
     <script src="./data/papers.js?v=20260410c"></script>
     <script src="./data/questions.js?v=20260410c"></script>
     <script type="module" src="./assets/app.js?v=20260410c"></script>

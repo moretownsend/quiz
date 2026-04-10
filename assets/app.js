@@ -47,14 +47,11 @@ const el = {
   sourceSummary: document.querySelector("#source-summary"),
   flagQuestion: document.querySelector("#flag-question"),
   reviewAttempt: document.querySelector("#review-attempt"),
-  installApp: document.querySelector("#install-app"),
   lifelineFifty: document.querySelector("#lifeline-fifty"),
   lifelineAudience: document.querySelector("#lifeline-audience"),
   lifelineSwitch: document.querySelector("#lifeline-switch"),
   lifelineSecond: document.querySelector("#lifeline-second")
 };
-
-let deferredPrompt = null;
 
 boot().catch((error) => {
   console.error(error);
@@ -120,20 +117,6 @@ function setupEvents() {
   el.lifelineAudience.addEventListener("click", useAudiencePoll);
   el.lifelineSwitch.addEventListener("click", useSwitchQuestion);
   el.lifelineSecond.addEventListener("click", useSecondChance);
-  window.addEventListener("beforeinstallprompt", (event) => {
-    event.preventDefault();
-    deferredPrompt = event;
-    el.installApp.classList.remove("hidden");
-  });
-  el.installApp.addEventListener("click", async () => {
-    if (!deferredPrompt) {
-      return;
-    }
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    el.installApp.classList.add("hidden");
-  });
 }
 
 function startWeeklyQuiz() {
@@ -555,12 +538,6 @@ function saveAttempt(attempt) {
   const attempts = getAttempts().filter((item) => item.quizId !== attempt.quizId);
   attempts.push(attempt);
   localStorage.setItem(STORAGE_KEYS.attempts, JSON.stringify(attempts));
-}
-
-async function registerPwa() {
-  if ("serviceWorker" in navigator && window.location.protocol !== "file:") {
-    await navigator.serviceWorker.register("./sw.js");
-  }
 }
 
 function escapeHtml(input) {
