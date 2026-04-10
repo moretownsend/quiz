@@ -9,10 +9,10 @@
       content="A mobile-friendly academic economics quiz with weekly paper-based questions."
     />
     <title>Economics Society Academic Quiz</title>
-    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="manifest" href="./manifest.webmanifest?v=20260410b" />
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./assets/icon.svg" />
-    <link rel="stylesheet" href="./assets/styles.css" />
+    <link rel="stylesheet" href="./assets/styles.css?v=20260410b" />
   </head>
   <body>
     <div class="app-shell">
@@ -121,8 +121,15 @@
       </button>
     </template>
 
-    <script src="./data/papers.js"></script>
-    <script src="./data/questions.js"></script>
-    <script type="module" src="./assets/app.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          registrations.forEach((registration) => registration.unregister());
+        });
+      }
+    </script>
+    <script src="./data/papers.js?v=20260410b"></script>
+    <script src="./data/questions.js?v=20260410b"></script>
+    <script type="module" src="./assets/app.js?v=20260410b"></script>
   </body>
 </html>
