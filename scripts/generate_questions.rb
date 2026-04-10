@@ -9,7 +9,7 @@ questions_js_path = File.join(ROOT, "data", "questions.js")
 
 papers = JSON.parse(File.read(papers_path))
 
-topic_distractors = {
+TOPIC_DISTRACTORS = {
   "Classical economics" => ["sticky prices", "rational bubbles", "search frictions", "deposit insurance"],
   "Trade and distribution" => ["adverse selection", "menu costs", "time inconsistency", "deposit insurance"],
   "Price theory" => ["moral hazard", "liquidity traps", "rational expectations", "screening"],
@@ -21,18 +21,18 @@ topic_distractors = {
   "Growth theory" => ["deposit insurance", "separating equilibrium", "sorting", "fixed exchange rate"],
   "Law and economics" => ["menu costs", "rational bubbles", "life-cycle saving", "voting paradox"],
   "Labor economics" => ["common-pool resources", "Hotelling rule", "liquidity preference", "deposit insurance"],
-  "Financial economics" => ["local public goods", "resource scarcity", "comparative advantage", "tâtonnement"],
+  "Financial economics" => ["local public goods", "resource scarcity", "comparative advantage", "tatonnement"],
   "Monetary economics" => ["urban land use", "common pool resources", "consumer surplus", "rent theory"],
   "Household economics" => ["speculative attacks", "screening", "bank runs", "common knowledge"],
   "Economics of crime" => ["bid-rent", "trade gains", "adverse selection", "deposit insurance"],
   "Finance" => ["commons governance", "minimum wage", "consumer surplus", "public goods"],
   "Behavioral economics" => ["revealed preference", "marginal productivity", "comparative advantage", "liquidity preference"],
-  "Banking" => ["division of labor", "life-cycle saving", "tâtonnement", "common-pool resources"],
+  "Banking" => ["division of labor", "life-cycle saving", "tatonnement", "common-pool resources"],
   "International macroeconomics" => ["consumer surplus", "screening", "deposit insurance", "market signaling"],
   "Endogenous growth" => ["involuntary unemployment", "trade gains", "local public goods", "screening"],
   "Institutional economics" => ["liquidity traps", "random walk", "deposit insurance", "menu costs"],
   "Political economy" => ["credit rationing", "urban unemployment", "rational expectations", "consumer surplus"],
-  "Development economics" => ["comparative advantage", "deposit insurance", "tâtonnement", "permanent income"],
+  "Development economics" => ["comparative advantage", "deposit insurance", "tatonnement", "permanent income"],
   "Expectations" => ["commons governance", "bid-rent", "credit rationing", "consumer surplus"],
   "Consumption" => ["fixed exchange rate", "voting with feet", "bank runs", "search frictions"],
   "Resource economics" => ["adverse selection", "specialization", "fiscal competition", "loss aversion"],
@@ -42,54 +42,87 @@ topic_distractors = {
   "Insurance economics" => ["division of labor", "Phillips curve", "price floor", "fiscal federalism"],
   "Contract theory" => ["natural monopoly", "life-cycle consumption", "local public goods", "comparative advantage"],
   "Urban economics" => ["deposit insurance", "common-pool resources", "aggregate demand", "screening"]
-}
+}.freeze
 
 PROMPT_TEMPLATES = [
-  lambda do |paper, _concept, _distractors|
-    "Which concept is most closely associated with #{paper['author']}'s #{paper['year']} work \"#{paper['title']}\"?"
+  lambda do |paper, _concept|
+    "Which concept is most closely associated with #{paper['author']}'s #{paper['year']} contribution \"#{paper['title']}\"?"
   end,
-  lambda do |paper, _concept, _distractors|
-    "In the context of \"#{paper['title']}\", which idea best matches the paper's core contribution?"
+  lambda do |paper, _concept|
+    "In a university-level review of #{paper['topic'].downcase}, which idea is most directly linked to \"#{paper['title']}\"?"
   end,
-  lambda do |paper, _concept, _distractors|
-    "#{paper['title']} is most often taught as a foundation for which of the following ideas?"
+  lambda do |paper, _concept|
+    "Which term best identifies the central analytical contribution of \"#{paper['title']}\"?"
   end,
-  lambda do |paper, _concept, _distractors|
-    "A student revising #{paper['topic'].downcase} would link \"#{paper['title']}\" most directly to which term?"
+  lambda do |paper, _concept|
+    "A student summarising #{paper['author']}'s \"#{paper['title']}\" would most likely emphasise which concept?"
   end,
-  lambda do |paper, _concept, _distractors|
-    "Which answer would best identify the central mechanism highlighted in #{paper['author']}'s \"#{paper['title']}\"?"
+  lambda do |paper, _concept|
+    "Within the economics literature, \"#{paper['title']}\" is most commonly cited for which of the following ideas?"
   end,
-  lambda do |paper, _concept, _distractors|
-    "If you saw \"#{paper['title']}\" on a reading list, which concept should you expect to revise?"
+  lambda do |paper, _concept|
+    "Which of the following is the best thematic match for #{paper['author']}'s work \"#{paper['title']}\"?"
   end,
-  lambda do |paper, _concept, _distractors|
-    "Which term best completes this sentence: #{paper['author']}'s \"#{paper['title']}\" is a classic reference for ____?"
+  lambda do |paper, _concept|
+    "If \"#{paper['title']}\" appeared on an examination reading list, which concept should a strong candidate immediately recall?"
   end,
-  lambda do |paper, _concept, _distractors|
-    "A lecturer cites \"#{paper['title']}\" while explaining #{paper['topic'].downcase}. Which concept is most likely being emphasized?"
+  lambda do |paper, _concept|
+    "Which concept provides the clearest shorthand for the main insight of \"#{paper['title']}\"?"
   end,
-  lambda do |paper, _concept, _distractors|
-    "Which of these is the best thematic match for #{paper['author']}'s \"#{paper['title']}\"?"
+  lambda do |paper, _concept|
+    "A lecturer introducing #{paper['topic'].downcase} would be most likely to use \"#{paper['title']}\" to motivate which concept?"
   end,
-  lambda do |paper, _concept, _distractors|
-    "When students summarize the contribution of \"#{paper['title']}\", which concept usually appears first?"
+  lambda do |paper, _concept|
+    "Which proposition would most plausibly be identified as the canonical contribution of \"#{paper['title']}\"?"
   end,
-  lambda do |paper, _concept, _distractors|
-    "Which concept is the strongest anchor point for remembering \"#{paper['title']}\"?"
+  lambda do |paper, _concept|
+    "Which answer best captures the mechanism most strongly associated with \"#{paper['title']}\"?"
   end,
-  lambda do |paper, _concept, _distractors|
-    "\"#{paper['title']}\" belongs in a quiz bank primarily because it helped define which idea?"
+  lambda do |paper, _concept|
+    "In professional economics teaching, \"#{paper['title']}\" is usually remembered as a key reference for which concept?"
+  end,
+  lambda do |paper, _concept|
+    "Which of the following would be the most appropriate label for the core idea developed in \"#{paper['title']}\"?"
+  end,
+  lambda do |paper, _concept|
+    "What is the most exam-appropriate description of the principal concept associated with \"#{paper['title']}\"?"
+  end,
+  lambda do |paper, _concept|
+    "Which concept would most reasonably appear in a model answer discussing the significance of \"#{paper['title']}\"?"
+  end,
+  lambda do |paper, _concept|
+    "An instructor asks for the leading concept attached to \"#{paper['title']}\". Which answer is most defensible?"
+  end,
+  lambda do |paper, _concept|
+    "Which conceptual contribution is most firmly identified with #{paper['author']}'s \"#{paper['title']}\"?"
+  end,
+  lambda do |paper, _concept|
+    "Which of the following is the strongest academic association for \"#{paper['title']}\"?"
+  end,
+  lambda do |paper, _concept|
+    "When revising #{paper['topic'].downcase}, which concept should be paired most directly with \"#{paper['title']}\"?"
+  end,
+  lambda do |paper, _concept|
+    "Which answer best completes the statement: \"#{paper['title']}\" is a foundational reference for ____?"
   end
 ].freeze
 
-def build_distractors(correct, paper, topic_distractors)
-  candidates = (paper["concepts"] - [correct]) + topic_distractors.fetch(paper["topic"], [])
+def build_distractors(correct, paper)
+  candidates = (paper["concepts"] - [correct]) + TOPIC_DISTRACTORS.fetch(paper["topic"], [])
   candidates.uniq.first(3)
 end
 
-def rotate_distractors(distractors, seed)
-  distractors.rotate(seed % distractors.length)
+def order_distractors(distractors, seed)
+  case seed % 4
+  when 0 then distractors
+  when 1 then distractors.rotate(seed % distractors.length)
+  when 2 then distractors.reverse
+  else distractors.reverse.rotate(seed % distractors.length)
+  end
+end
+
+def explanation_for(paper, concept)
+  "#{paper['author']}'s #{paper['year']} contribution is most commonly taught in connection with #{concept}. The attached source link points to the paper or its authoritative catalogue record so the answer can be checked against the original literature."
 end
 
 questions = []
@@ -97,19 +130,12 @@ counter = 1
 
 papers.each do |paper|
   paper["concepts"].each_with_index do |concept, concept_index|
-    distractors = build_distractors(concept, paper, topic_distractors)
+    distractors = build_distractors(concept, paper)
     next if distractors.length < 3
 
     PROMPT_TEMPLATES.each_with_index do |template, template_index|
-      prompt = template.call(paper, concept, distractors)
-      ordered_distractors =
-        case template_index % 4
-        when 0 then distractors
-        when 1 then rotate_distractors(distractors, concept_index + template_index)
-        when 2 then distractors.reverse
-        else rotate_distractors(distractors.reverse, concept_index + template_index)
-        end
-
+      prompt = template.call(paper, concept)
+      ordered_distractors = order_distractors(distractors, concept_index + template_index)
       answer_pool = ([concept] + ordered_distractors).uniq.first(4)
       next unless answer_pool.length == 4
 
@@ -128,7 +154,7 @@ papers.each do |paper|
         "paperTitle" => paper["title"],
         "topic" => paper["topic"],
         "prompt" => prompt,
-        "explanation" => "#{paper['author']}'s #{paper['year']} work is commonly cited for #{concept}. Review the source paper for the original framing and surrounding argument.",
+        "explanation" => explanation_for(paper, concept),
         "sourceUrl" => paper["sourceUrl"],
         "jstorUrl" => paper["jstorUrl"],
         "answers" => answers
@@ -141,4 +167,4 @@ end
 File.write(output_path, JSON.pretty_generate(questions))
 File.write(papers_js_path, "window.ECON_MILLIONAIRE_PAPERS = #{JSON.generate(papers)};\n")
 File.write(questions_js_path, "window.ECON_MILLIONAIRE_QUESTIONS = #{JSON.generate(questions)};\n")
-puts "Generated #{questions.length} unique questions into #{output_path}"
+puts "Generated #{questions.length} professionally phrased questions into #{output_path}"
