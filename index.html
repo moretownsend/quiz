@@ -4,16 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#09143d" />
-    <script>
-      (function () {
-        var currentVersion = "20260410c";
-        var url = new URL(window.location.href);
-        if (url.searchParams.get("v") !== currentVersion) {
-          url.searchParams.set("v", currentVersion);
-          window.location.replace(url.toString());
-        }
-      })();
-    </script>
     <meta
       name="description"
       content="A mobile-friendly academic economics quiz with weekly paper-based questions."
@@ -21,7 +11,7 @@
     <title>Economics Society Academic Quiz</title>
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./assets/icon.svg" />
-    <link rel="stylesheet" href="./assets/styles.css?v=20260410c" />
+    <link rel="stylesheet" href="./assets/styles.20260410d.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -124,8 +114,8 @@
       </button>
     </template>
 
-    <script src="./data/papers.js?v=20260410c"></script>
-    <script src="./data/questions.js?v=20260410c"></script>
-    <script type="module" src="./assets/app.js?v=20260410c"></script>
+    <script src="./data/papers.20260410d.js"></script>
+    <script src="./data/questions.20260410d.js"></script>
+    <script type="module" src="./assets/app.20260410d.js"></script>
   </body>
 </html>
