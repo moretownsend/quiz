@@ -1,0 +1,21 @@
+{
+  "name": "Econ Millionaire",
+  "short_name": "Econ Quiz",
+  "description": "A mobile-first economics quiz game with weekly question refreshes and source links.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#060d26",
+  "theme_color": "#09143d",
+  "icons": [
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

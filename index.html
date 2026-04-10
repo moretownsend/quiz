@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#09143d" />
+    <meta
+      name="description"
+      content="A mobile-friendly economics quiz game inspired by Who Wants to Be a Millionaire."
+    />
+    <title>Econ Millionaire</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./assets/icon.svg" />
+    <link rel="stylesheet" href="./assets/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="top-bar">
+        <div>
+          <p class="eyebrow">Economics Theory Quiz</p>
+          <h1>Econ Millionaire</h1>
+        </div>
+        <button id="open-settings" class="ghost-button" type="button" aria-expanded="false">
+          Sources
+        </button>
+      </header>
+
+      <main class="layout">
+        <section class="main-stage">
+          <div class="status-card">
+            <div>
+              <p class="status-label">Current Quiz</p>
+              <p id="quiz-stamp" class="status-value">Loading weekly draw...</p>
+            </div>
+            <div class="score-chip">
+              <span>Score</span>
+              <strong id="score-value">0 / 15</strong>
+            </div>
+          </div>
+
+          <section class="lifelines" aria-label="Lifelines">
+            <button id="lifeline-fifty" class="lifeline" type="button">50:50</button>
+            <button id="lifeline-audience" class="lifeline" type="button">Ask the Market</button>
+            <button id="lifeline-switch" class="lifeline" type="button">Switch Paper</button>
+            <button id="lifeline-second" class="lifeline" type="button">Second Chance</button>
+          </section>
+
+          <section class="question-card" aria-live="polite">
+            <div class="question-meta">
+              <span id="question-count">Question 1 of 15</span>
+              <span id="question-topic">Foundations</span>
+            </div>
+            <h2 id="question-text">Preparing your first question...</h2>
+            <div id="answer-grid" class="answer-grid"></div>
+          </section>
+
+          <section id="feedback-card" class="feedback-card hidden" aria-live="polite">
+            <p id="feedback-status" class="feedback-status"></p>
+            <p id="feedback-explanation"></p>
+            <div class="feedback-links">
+              <a id="paper-link" href="#" target="_blank" rel="noreferrer">Read the source paper</a>
+              <a id="jstor-link" href="#" target="_blank" rel="noreferrer" class="hidden">Open JSTOR link</a>
+            </div>
+            <div class="feedback-actions">
+              <button id="next-question" class="primary-button" type="button">Next Question</button>
+              <button id="flag-question" class="ghost-button" type="button">Flag an issue</button>
+            </div>
+          </section>
+
+          <section id="results-card" class="results-card hidden">
+            <p class="status-label">Weekly Attempt Complete</p>
+            <h2 id="results-heading">Your score is 0 / 15</h2>
+            <p id="results-summary"></p>
+            <div class="results-actions">
+              <button id="review-attempt" class="primary-button" type="button">Review Answers</button>
+              <button id="install-app" class="ghost-button hidden" type="button">Add to iPhone Home Screen</button>
+            </div>
+          </section>
+
+          <section id="review-list" class="review-list hidden"></section>
+        </section>
+
+        <aside class="side-panel">
+          <section class="money-ladder">
+            <p class="status-label">Prize Ladder</p>
+            <ol id="ladder-list"></ol>
+          </section>
+
+          <section class="history-panel">
+            <div class="panel-heading">
+              <p class="status-label">Attempt History</p>
+              <button id="export-history" class="ghost-button small" type="button">Export JSON</button>
+            </div>
+            <div id="history-list" class="history-list"></div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <dialog id="settings-dialog">
+      <form method="dialog" class="settings-sheet">
+        <div class="sheet-header">
+          <div>
+            <p class="status-label">Question Sources</p>
+            <h2>Paper Catalogue</h2>
+          </div>
+          <button class="ghost-button small" type="submit">Close</button>
+        </div>
+        <p class="sheet-copy">
+          Choose which papers feed the generator. Changes affect future weekly quizzes.
+        </p>
+        <div id="source-summary" class="source-summary"></div>
+        <div id="source-list" class="source-list"></div>
+      </form>
+    </dialog>
+
+    <template id="answer-template">
+      <button class="answer-option" type="button">
+        <span class="answer-letter"></span>
+        <span class="answer-text"></span>
+      </button>
+    </template>
+
+    <script type="module" src="./assets/app.js"></script>
+  </body>
+</html>
