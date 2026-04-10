@@ -4,23 +4,7 @@ const STORAGE_KEYS = {
   sourcePrefs: "econ-millionaire-source-prefs",
   flags: "econ-millionaire-flags"
 };
-const LADDER = [
-  "£100",
-  "£200",
-  "£300",
-  "£500",
-  "£1,000",
-  "£2,000",
-  "£4,000",
-  "£8,000",
-  "£16,000",
-  "£32,000",
-  "£64,000",
-  "£125,000",
-  "£250,000",
-  "£500,000",
-  "£1,000,000"
-];
+const LADDER = Array.from({ length: QUIZ_LENGTH }, (_, index) => `${index + 1}`);
 
 const state = {
   allQuestions: [],
@@ -51,7 +35,6 @@ const el = {
   nextQuestion: document.querySelector("#next-question"),
   questionText: document.querySelector("#question-text"),
   questionCount: document.querySelector("#question-count"),
-  questionTopic: document.querySelector("#question-topic"),
   scoreValue: document.querySelector("#score-value"),
   resultsCard: document.querySelector("#results-card"),
   resultsHeading: document.querySelector("#results-heading"),
@@ -221,7 +204,6 @@ function renderQuestion() {
   el.reviewList.classList.add("hidden");
   el.answerGrid.innerHTML = "";
   el.questionCount.textContent = `Question ${state.currentIndex + 1} of ${QUIZ_LENGTH}`;
-  el.questionTopic.textContent = question.topic;
   el.questionText.textContent = question.prompt;
   el.scoreValue.textContent = `${state.score} / ${QUIZ_LENGTH}`;
   updateLadder();
@@ -443,7 +425,6 @@ function lockToPreviousAttempt(attempt) {
   el.questionText.textContent = "This week's quiz has already been completed on this device.";
   el.answerGrid.innerHTML = "";
   el.questionCount.textContent = `Question ${QUIZ_LENGTH} of ${QUIZ_LENGTH}`;
-  el.questionTopic.textContent = "Attempt locked";
   el.scoreValue.textContent = `${attempt.score} / ${attempt.total}`;
   el.feedbackCard.classList.add("hidden");
   el.resultsCard.classList.remove("hidden");

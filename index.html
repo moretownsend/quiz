@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#09143d" />
     <meta
       name="description"
-      content="A mobile-friendly economics quiz game inspired by Who Wants to Be a Millionaire."
+      content="A mobile-friendly academic economics quiz with weekly paper-based questions."
     />
-    <title>Econ Millionaire</title>
+    <title>Economics Society Academic Quiz</title>
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./assets/icon.svg" />
@@ -19,7 +19,7 @@
       <header class="top-bar">
         <div>
           <p class="eyebrow">Economics Theory Quiz</p>
-          <h1>Econ Millionaire</h1>
+          <h1>Economics Society Academic Quiz</h1>
         </div>
         <button id="open-settings" class="ghost-button" type="button" aria-expanded="false">
           Sources
@@ -49,10 +49,14 @@
           <section class="question-card" aria-live="polite">
             <div class="question-meta">
               <span id="question-count">Question 1 of 15</span>
-              <span id="question-topic">Foundations</span>
             </div>
             <h2 id="question-text">Preparing your first question...</h2>
             <div id="answer-grid" class="answer-grid"></div>
+          </section>
+
+          <section class="money-ladder">
+            <p class="status-label">Question Progression</p>
+            <ol id="ladder-list"></ol>
           </section>
 
           <section id="feedback-card" class="feedback-card hidden" aria-live="polite">
@@ -82,11 +86,6 @@
         </section>
 
         <aside class="side-panel">
-          <section class="money-ladder">
-            <p class="status-label">Prize Ladder</p>
-            <ol id="ladder-list"></ol>
-          </section>
-
           <section class="history-panel">
             <div class="panel-heading">
               <p class="status-label">Attempt History</p>
