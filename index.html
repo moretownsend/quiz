@@ -4,6 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#09143d" />
+    <script>
+      (function () {
+        var currentVersion = "65d7d4f";
+        var url = new URL(window.location.href);
+        if (url.searchParams.get("v") !== currentVersion) {
+          url.searchParams.set("v", currentVersion);
+          window.location.replace(url.toString());
+        }
+      })();
+    </script>
     <meta
       name="description"
       content="A mobile-friendly academic economics quiz with weekly paper-based questions."
