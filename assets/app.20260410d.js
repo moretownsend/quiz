@@ -41,6 +41,7 @@ const el = {
   resultsSummary: document.querySelector("#results-summary"),
   reviewList: document.querySelector("#review-list"),
   ladderList: document.querySelector("#ladder-list"),
+  newRound: document.querySelector("#new-round"),
   openSettings: document.querySelector("#open-settings"),
   settingsDialog: document.querySelector("#settings-dialog"),
   sourceList: document.querySelector("#source-list"),
@@ -103,6 +104,7 @@ function hydrateSourcePreferences() {
 
 function setupEvents() {
   el.nextQuestion.addEventListener("click", advanceQuiz);
+  el.newRound.addEventListener("click", startNewRound);
   el.openSettings.addEventListener("click", () => {
     el.settingsDialog.showModal();
     el.openSettings.setAttribute("aria-expanded", "true");
@@ -126,6 +128,19 @@ function startWeeklyQuiz() {
     return;
   }
 
+  resetRuntimeState();
+  state.quizQuestions = buildWeeklyQuestionSet();
+  renderQuestion();
+}
+
+function startNewRound() {
+  state.currentQuizId = currentQuizId();
+  localStorage.removeItem(STORAGE_KEYS.currentRun);
+  const attempts = getAttempts().filter((attempt) => attempt.quizId !== state.currentQuizId);
+  localStorage.setItem(STORAGE_KEYS.attempts, JSON.stringify(attempts));
+  el.feedbackCard.classList.add("hidden");
+  el.resultsCard.classList.add("hidden");
+  el.reviewList.classList.add("hidden");
   resetRuntimeState();
   state.quizQuestions = buildWeeklyQuestionSet();
   renderQuestion();
