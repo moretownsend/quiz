@@ -11,7 +11,7 @@
 - Browser-local attempt history with timestamp, score, and question log
 - Source catalogue settings so you can enable or disable individual papers
 - PWA shell for iPhone home-screen installation
-- A generated starter bank of `1000` questions
+- A generated starter bank covering the full current catalogue (`1968` questions with the present source list)
 
 ## Data model
 

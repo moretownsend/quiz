@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 require "json"
-require "fileutils"
 
 ROOT = File.expand_path("..", __dir__)
 papers_path = File.join(ROOT, "data", "papers.json")
@@ -43,92 +42,99 @@ topic_distractors = {
   "Urban economics" => ["deposit insurance", "common-pool resources", "aggregate demand", "screening"]
 }
 
+PROMPT_TEMPLATES = [
+  lambda do |paper, _concept, _distractors|
+    "Which concept is most closely associated with #{paper['author']}'s #{paper['year']} work \"#{paper['title']}\"?"
+  end,
+  lambda do |paper, _concept, _distractors|
+    "In the context of \"#{paper['title']}\", which idea best matches the paper's core contribution?"
+  end,
+  lambda do |paper, _concept, _distractors|
+    "#{paper['title']} is most often taught as a foundation for which of the following ideas?"
+  end,
+  lambda do |paper, _concept, _distractors|
+    "A student revising #{paper['topic'].downcase} would link \"#{paper['title']}\" most directly to which term?"
+  end,
+  lambda do |paper, _concept, _distractors|
+    "Which answer would best identify the central mechanism highlighted in #{paper['author']}'s \"#{paper['title']}\"?"
+  end,
+  lambda do |paper, _concept, _distractors|
+    "If you saw \"#{paper['title']}\" on a reading list, which concept should you expect to revise?"
+  end,
+  lambda do |paper, _concept, _distractors|
+    "Which term best completes this sentence: #{paper['author']}'s \"#{paper['title']}\" is a classic reference for ____?"
+  end,
+  lambda do |paper, _concept, _distractors|
+    "A lecturer cites \"#{paper['title']}\" while explaining #{paper['topic'].downcase}. Which concept is most likely being emphasized?"
+  end,
+  lambda do |paper, _concept, _distractors|
+    "Which of these is the best thematic match for #{paper['author']}'s \"#{paper['title']}\"?"
+  end,
+  lambda do |paper, _concept, _distractors|
+    "When students summarize the contribution of \"#{paper['title']}\", which concept usually appears first?"
+  end,
+  lambda do |paper, _concept, _distractors|
+    "Which concept is the strongest anchor point for remembering \"#{paper['title']}\"?"
+  end,
+  lambda do |paper, _concept, _distractors|
+    "\"#{paper['title']}\" belongs in a quiz bank primarily because it helped define which idea?"
+  end
+].freeze
+
 def build_distractors(correct, paper, topic_distractors)
   candidates = (paper["concepts"] - [correct]) + topic_distractors.fetch(paper["topic"], [])
   candidates.uniq.first(3)
 end
 
-templates = [
-  lambda do |paper, concept, distractors, index|
-    {
-      "prompt" => "Which concept is most closely associated with #{paper['author']}'s #{paper['year']} work \"#{paper['title']}\"?",
-      "correct" => concept,
-      "incorrect" => distractors
-    }
-  end,
-  lambda do |paper, concept, distractors, index|
-    {
-      "prompt" => "In the context of \"#{paper['title']}\", which idea best matches the paper's core contribution?",
-      "correct" => concept,
-      "incorrect" => distractors.rotate(index % 3)
-    }
-  end,
-  lambda do |paper, concept, distractors, index|
-    {
-      "prompt" => "#{paper['title']} is most often taught as a foundation for which of the following ideas?",
-      "correct" => concept,
-      "incorrect" => distractors.reverse
-    }
-  end,
-  lambda do |paper, concept, distractors, index|
-    {
-      "prompt" => "A student revising #{paper['topic'].downcase} would link \"#{paper['title']}\" most directly to which term?",
-      "correct" => concept,
-      "incorrect" => distractors
-    }
-  end,
-  lambda do |paper, concept, distractors, index|
-    {
-      "prompt" => "Which answer would best identify the central mechanism highlighted in #{paper['author']}'s \"#{paper['title']}\"?",
-      "correct" => concept,
-      "incorrect" => distractors.rotate((index + 1) % 3)
-    }
-  end
-]
+def rotate_distractors(distractors, seed)
+  distractors.rotate(seed % distractors.length)
+end
 
 questions = []
 counter = 1
 
-until questions.length >= 1000
-  papers.each do |paper|
-    paper["concepts"].each_with_index do |concept, concept_index|
-      distractors = build_distractors(concept, paper, topic_distractors)
-      next if distractors.length < 3
+papers.each do |paper|
+  paper["concepts"].each_with_index do |concept, concept_index|
+    distractors = build_distractors(concept, paper, topic_distractors)
+    next if distractors.length < 3
 
-      templates.each_with_index do |template, template_index|
-        variant = template.call(paper, concept, distractors, concept_index + template_index)
-        answer_pool = ([variant["correct"]] + variant["incorrect"]).uniq.first(4)
-        next unless answer_pool.length == 4
-
-        correct_text = variant["correct"]
-        rotated = answer_pool.rotate((counter + template_index) % 4)
-        answers = rotated.map.with_index do |text, answer_index|
-          {
-            "id" => "q#{counter}-a#{answer_index + 1}",
-            "text" => text,
-            "correct" => text == correct_text
-          }
+    PROMPT_TEMPLATES.each_with_index do |template, template_index|
+      prompt = template.call(paper, concept, distractors)
+      ordered_distractors =
+        case template_index % 4
+        when 0 then distractors
+        when 1 then rotate_distractors(distractors, concept_index + template_index)
+        when 2 then distractors.reverse
+        else rotate_distractors(distractors.reverse, concept_index + template_index)
         end
 
-        questions << {
-          "id" => "q#{counter}",
-          "paperId" => paper["id"],
-          "paperTitle" => paper["title"],
-          "topic" => paper["topic"],
-          "prompt" => variant["prompt"],
-          "explanation" => "#{paper['author']}'s #{paper['year']} work is commonly cited for #{concept}. Review the source paper for the original framing and surrounding argument.",
-          "sourceUrl" => paper["sourceUrl"],
-          "jstorUrl" => paper["jstorUrl"],
-          "answers" => answers
+      answer_pool = ([concept] + ordered_distractors).uniq.first(4)
+      next unless answer_pool.length == 4
+
+      rotated_answers = answer_pool.rotate((counter + template_index) % 4)
+      answers = rotated_answers.map.with_index do |text, answer_index|
+        {
+          "id" => "q#{counter}-a#{answer_index + 1}",
+          "text" => text,
+          "correct" => text == concept
         }
-        counter += 1
-        break if questions.length >= 1000
       end
-      break if questions.length >= 1000
+
+      questions << {
+        "id" => "q#{counter}",
+        "paperId" => paper["id"],
+        "paperTitle" => paper["title"],
+        "topic" => paper["topic"],
+        "prompt" => prompt,
+        "explanation" => "#{paper['author']}'s #{paper['year']} work is commonly cited for #{concept}. Review the source paper for the original framing and surrounding argument.",
+        "sourceUrl" => paper["sourceUrl"],
+        "jstorUrl" => paper["jstorUrl"],
+        "answers" => answers
+      }
+      counter += 1
     end
-    break if questions.length >= 1000
   end
 end
 
 File.write(output_path, JSON.pretty_generate(questions))
-puts "Generated #{questions.length} questions into #{output_path}"
+puts "Generated #{questions.length} unique questions into #{output_path}"
