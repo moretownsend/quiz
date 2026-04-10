@@ -66,7 +66,6 @@ async function boot() {
   renderLadder();
   renderSources();
   setupEvents();
-  await registerPwa();
   startWeeklyQuiz();
 }
 
