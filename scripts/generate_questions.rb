@@ -44,66 +44,78 @@ TOPIC_DISTRACTORS = {
   "Urban economics" => ["deposit insurance", "common-pool resources", "aggregate demand", "screening"]
 }.freeze
 
-PROMPT_TEMPLATES = [
+STEMS = [
   lambda do |paper, _concept|
-    "Which concept is most closely associated with #{paper['author']}'s #{paper['year']} contribution \"#{paper['title']}\"?"
+    "Which concept should be identified as the principal analytical contribution of #{paper['author']}'s #{paper['year']} work, \"#{paper['title']}\"?"
   end,
   lambda do |paper, _concept|
-    "In a university-level review of #{paper['topic'].downcase}, which idea is most directly linked to \"#{paper['title']}\"?"
+    "In an upper-level economics examination, \"#{paper['title']}\" would most appropriately be associated with which concept?"
   end,
   lambda do |paper, _concept|
-    "Which term best identifies the central analytical contribution of \"#{paper['title']}\"?"
+    "Which idea is the most academically defensible label for the core contribution of \"#{paper['title']}\"?"
   end,
   lambda do |paper, _concept|
-    "A student summarising #{paper['author']}'s \"#{paper['title']}\" would most likely emphasise which concept?"
+    "A strong answer script discussing \"#{paper['title']}\" would most likely centre on which concept?"
   end,
   lambda do |paper, _concept|
-    "Within the economics literature, \"#{paper['title']}\" is most commonly cited for which of the following ideas?"
+    "Which concept best captures the enduring significance of \"#{paper['title']}\" within #{paper['topic'].downcase}?"
   end,
   lambda do |paper, _concept|
-    "Which of the following is the best thematic match for #{paper['author']}'s work \"#{paper['title']}\"?"
+    "Which term would an examiner most reasonably expect students to connect to \"#{paper['title']}\"?"
   end,
   lambda do |paper, _concept|
-    "If \"#{paper['title']}\" appeared on an examination reading list, which concept should a strong candidate immediately recall?"
+    "Which of the following provides the clearest statement of the idea for which \"#{paper['title']}\" is remembered?"
   end,
   lambda do |paper, _concept|
-    "Which concept provides the clearest shorthand for the main insight of \"#{paper['title']}\"?"
+    "When economists reference \"#{paper['title']}\", which concept are they most commonly invoking?"
   end,
   lambda do |paper, _concept|
-    "A lecturer introducing #{paper['topic'].downcase} would be most likely to use \"#{paper['title']}\" to motivate which concept?"
+    "Which concept most directly summarises the main theoretical insight of \"#{paper['title']}\"?"
   end,
   lambda do |paper, _concept|
-    "Which proposition would most plausibly be identified as the canonical contribution of \"#{paper['title']}\"?"
+    "A marker awarding full credit for knowledge of \"#{paper['title']}\" would expect recognition of which concept?"
   end,
   lambda do |paper, _concept|
-    "Which answer best captures the mechanism most strongly associated with \"#{paper['title']}\"?"
+    "Which label best fits the key mechanism or proposition identified with \"#{paper['title']}\"?"
   end,
   lambda do |paper, _concept|
-    "In professional economics teaching, \"#{paper['title']}\" is usually remembered as a key reference for which concept?"
+    "Within the standard economics curriculum, which concept is most closely linked to \"#{paper['title']}\"?"
   end,
   lambda do |paper, _concept|
-    "Which of the following would be the most appropriate label for the core idea developed in \"#{paper['title']}\"?"
+    "Which answer most accurately identifies the idea to which \"#{paper['title']}\" made a classic contribution?"
   end,
   lambda do |paper, _concept|
-    "What is the most exam-appropriate description of the principal concept associated with \"#{paper['title']}\"?"
+    "Which concept belongs in the first line of a concise professional summary of \"#{paper['title']}\"?"
   end,
   lambda do |paper, _concept|
-    "Which concept would most reasonably appear in a model answer discussing the significance of \"#{paper['title']}\"?"
+    "If students were asked to classify the intellectual contribution of \"#{paper['title']}\", which concept should they select?"
   end,
   lambda do |paper, _concept|
-    "An instructor asks for the leading concept attached to \"#{paper['title']}\". Which answer is most defensible?"
+    "Which concept is most appropriately treated as the headline association for \"#{paper['title']}\"?"
   end,
   lambda do |paper, _concept|
-    "Which conceptual contribution is most firmly identified with #{paper['author']}'s \"#{paper['title']}\"?"
+    "Which of the following best represents the canonical concept tied to \"#{paper['title']}\"?"
   end,
   lambda do |paper, _concept|
-    "Which of the following is the strongest academic association for \"#{paper['title']}\"?"
+    "Which concept would most likely appear in a high-quality revision note on \"#{paper['title']}\"?"
   end,
   lambda do |paper, _concept|
-    "When revising #{paper['topic'].downcase}, which concept should be paired most directly with \"#{paper['title']}\"?"
+    "In professional teaching practice, \"#{paper['title']}\" is most likely to be introduced through which concept?"
   end,
   lambda do |paper, _concept|
-    "Which answer best completes the statement: \"#{paper['title']}\" is a foundational reference for ____?"
+    "Which answer is the strongest academic association for #{paper['author']}'s \"#{paper['title']}\"?"
+  end,
+  lambda do |paper, _concept|
+    "Which idea would best complete the statement: \"#{paper['title']}\" is a landmark reference for ____?"
+  end,
+  lambda do |paper, _concept|
+    "Which concept most accurately identifies the recognised contribution of \"#{paper['title']}\" to economics?"
+  end,
+  lambda do |paper, _concept|
+    "Which option offers the most precise exam-style classification of \"#{paper['title']}\"?"
+  end,
+  lambda do |paper, _concept|
+    "A lecturer setting a closed-book examination on #{paper['topic'].downcase} would most likely use \"#{paper['title']}\" to test knowledge of which concept?"
   end
 ].freeze
 
@@ -122,7 +134,7 @@ def order_distractors(distractors, seed)
 end
 
 def explanation_for(paper, concept)
-  "#{paper['author']}'s #{paper['year']} contribution is most commonly taught in connection with #{concept}. The attached source link points to the paper or its authoritative catalogue record so the answer can be checked against the original literature."
+  "#{paper['author']}'s #{paper['year']} work is conventionally taught in relation to #{concept}. The linked source provides the paper itself or an authoritative record suitable for verification."
 end
 
 questions = []
@@ -133,27 +145,25 @@ papers.each do |paper|
     distractors = build_distractors(concept, paper)
     next if distractors.length < 3
 
-    PROMPT_TEMPLATES.each_with_index do |template, template_index|
-      prompt = template.call(paper, concept)
+    STEMS.each_with_index do |stem, template_index|
       ordered_distractors = order_distractors(distractors, concept_index + template_index)
       answer_pool = ([concept] + ordered_distractors).uniq.first(4)
       next unless answer_pool.length == 4
 
-      rotated_answers = answer_pool.rotate((counter + template_index) % 4)
-      answers = rotated_answers.map.with_index do |text, answer_index|
+      answers = answer_pool.rotate((counter + template_index) % 4).map.with_index do |text, answer_index|
         {
-          "id" => "q#{counter}-a#{answer_index + 1}",
+          "id" => "qb2-#{counter}-a#{answer_index + 1}",
           "text" => text,
           "correct" => text == concept
         }
       end
 
       questions << {
-        "id" => "q#{counter}",
+        "id" => "qb2-#{counter}",
         "paperId" => paper["id"],
         "paperTitle" => paper["title"],
         "topic" => paper["topic"],
-        "prompt" => prompt,
+        "prompt" => stem.call(paper, concept),
         "explanation" => explanation_for(paper, concept),
         "sourceUrl" => paper["sourceUrl"],
         "jstorUrl" => paper["jstorUrl"],
@@ -167,4 +177,4 @@ end
 File.write(output_path, JSON.pretty_generate(questions))
 File.write(papers_js_path, "window.ECON_MILLIONAIRE_PAPERS = #{JSON.generate(papers)};\n")
 File.write(questions_js_path, "window.ECON_MILLIONAIRE_QUESTIONS = #{JSON.generate(questions)};\n")
-puts "Generated #{questions.length} professionally phrased questions into #{output_path}"
+puts "Generated #{questions.length} replacement questions into #{output_path}"
