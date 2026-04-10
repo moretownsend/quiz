@@ -92,7 +92,7 @@ async function loadPapers() {
 }
 
 function hydrateSourcePreferences() {
-  const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.sourcePrefs) || "[]");
+  const saved = safeReadStorage(STORAGE_KEYS.sourcePrefs, []);
   const overrides = new Set(saved);
   state.enabledPaperIds = new Set(
     state.allPapers
@@ -501,7 +501,7 @@ function flagCurrentQuestion() {
   if (!question) {
     return;
   }
-  const flags = JSON.parse(localStorage.getItem(STORAGE_KEYS.flags) || "[]");
+  const flags = safeReadStorage(STORAGE_KEYS.flags, []);
   flags.push({
     flaggedAt: new Date().toISOString(),
     questionId: question.id,
@@ -530,7 +530,7 @@ function currentQuestion() {
 }
 
 function getAttempts() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEYS.attempts) || "[]");
+  return safeReadStorage(STORAGE_KEYS.attempts, []);
 }
 
 function saveAttempt(attempt) {
@@ -549,9 +549,22 @@ function escapeHtml(input) {
 }
 
 function getStoredCurrentRun() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEYS.currentRun) || "null");
+  return safeReadStorage(STORAGE_KEYS.currentRun, null);
 }
 
 function toTitleCase(input) {
   return String(input).replace(/\b([a-z])/g, (match) => match.toUpperCase());
+}
+
+function safeReadStorage(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === null) {
+      return fallback;
+    }
+    return JSON.parse(raw);
+  } catch (_error) {
+    localStorage.removeItem(key);
+    return fallback;
+  }
 }
