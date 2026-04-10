@@ -50,27 +50,28 @@ body::before {
   padding: max(16px, env(safe-area-inset-top)) 0 max(24px, env(safe-area-inset-bottom));
 }
 
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .top-bar,
 .layout,
-.status-card,
 .lifelines,
 .question-meta,
 .feedback-actions,
 .feedback-links,
 .results-actions,
-.panel-heading,
 .sheet-header,
 .source-summary,
 .source-row,
-.history-item,
 .review-card header {
   display: flex;
   align-items: center;
 }
 
 .top-bar,
-.status-card,
-.panel-heading,
 .sheet-header {
   justify-content: space-between;
 }
@@ -100,26 +101,24 @@ h1 {
 }
 
 .layout {
-  align-items: stretch;
+  align-items: start;
   gap: 20px;
 }
 
 .main-stage {
-  flex: 1.7;
+  flex: 1;
+  max-width: 880px;
+  margin: 0 auto;
 }
 
 .side-panel {
-  flex: 0.78;
-  display: grid;
-  gap: 20px;
+  display: none;
 }
 
-.status-card,
 .question-card,
 .feedback-card,
 .results-card,
 .money-ladder,
-.history-panel,
 .settings-sheet,
 .review-card {
   background: linear-gradient(180deg, rgba(255, 253, 249, 0.98), rgba(242, 234, 223, 0.98));
@@ -128,41 +127,26 @@ h1 {
   box-shadow: var(--shadow);
 }
 
-.status-card,
 .question-card,
 .feedback-card,
 .results-card,
 .money-ladder,
-.history-panel,
 .review-card {
   padding: 20px;
 }
 
-.status-card {
-  margin-bottom: 16px;
-}
-
-.status-value,
-.score-chip strong,
+.feedback-status,
 .feedback-status,
 .answer-letter {
   font-weight: 700;
 }
 
-.score-chip {
-  min-width: 110px;
-  padding: 10px 14px;
-  background: var(--surface-soft);
-  border-radius: 18px;
-  text-align: center;
-  border: 1px solid var(--line);
-}
-
 .lifelines {
   gap: 12px;
-  margin-bottom: 16px;
+  margin: 0 auto 16px;
   overflow-x: auto;
   padding-bottom: 4px;
+  justify-content: center;
 }
 
 .lifeline,
@@ -203,6 +187,7 @@ h1 {
 .question-card {
   position: relative;
   overflow: hidden;
+  text-align: center;
 }
 
 .question-card::after {
@@ -243,6 +228,8 @@ h1 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+  max-width: 760px;
+  margin: 0 auto;
 }
 
 .answer-option {
@@ -256,6 +243,10 @@ h1 {
   background: linear-gradient(180deg, rgba(255, 253, 249, 0.96), rgba(247, 241, 232, 0.96));
   border: 1px solid var(--line);
   border-radius: 20px;
+}
+
+.answer-text {
+  text-transform: capitalize;
 }
 
 .answer-option:hover:not(:disabled),
@@ -334,6 +325,11 @@ a {
   padding: 8px 12px;
 }
 
+.money-ladder {
+  max-width: 880px;
+  margin: 16px auto 0;
+}
+
 .money-ladder ol {
   list-style: none;
   padding: 0;
@@ -358,19 +354,16 @@ a {
   border: 1px solid var(--line-strong);
 }
 
-.history-list,
 .source-list,
 .review-list {
   display: grid;
   gap: 12px;
 }
 
-.history-item,
 .review-card header {
   align-items: flex-start;
 }
 
-.history-item,
 .review-card,
 .source-row {
   padding: 14px;
@@ -378,7 +371,6 @@ a {
   border-radius: 18px;
 }
 
-.history-item p:last-child,
 .review-card p:last-child,
 .source-row p:last-child {
   color: var(--ink-muted);
@@ -387,7 +379,7 @@ a {
 dialog {
   border: 0;
   padding: 0;
-  width: min(760px, calc(100vw - 18px));
+  width: min(960px, calc(100vw - 18px));
   background: transparent;
 }
 
@@ -399,6 +391,7 @@ dialog::backdrop {
 .settings-sheet {
   max-height: min(88vh, 820px);
   overflow: auto;
+  padding: 28px;
 }
 
 .sheet-copy {
@@ -409,6 +402,19 @@ dialog::backdrop {
 .source-row {
   gap: 16px;
   align-items: flex-start;
+}
+
+.site-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.site-link img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .source-toggle {
@@ -454,11 +460,16 @@ dialog::backdrop {
     width: min(100vw - 12px, 100%);
   }
 
+  .top-bar,
+  .top-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .answer-grid {
     grid-template-columns: 1fr;
   }
 
-  .status-card,
   .feedback-actions,
   .results-actions,
   .top-bar {

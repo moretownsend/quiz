@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#09143d" />
     <script>
       (function () {
-        var currentVersion = "65d7d4f";
+        var currentVersion = "20260410c";
         var url = new URL(window.location.href);
         if (url.searchParams.get("v") !== currentVersion) {
           url.searchParams.set("v", currentVersion);
@@ -19,10 +19,10 @@
       content="A mobile-friendly academic economics quiz with weekly paper-based questions."
     />
     <title>Economics Society Academic Quiz</title>
-    <link rel="manifest" href="./manifest.webmanifest?v=20260410b" />
+    <link rel="manifest" href="./manifest.webmanifest?v=20260410c" />
     <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./assets/icon.svg" />
-    <link rel="stylesheet" href="./assets/styles.css?v=20260410b" />
+    <link rel="stylesheet" href="./assets/styles.css?v=20260410c" />
   </head>
   <body>
     <div class="app-shell">
@@ -31,24 +31,27 @@
           <p class="eyebrow">Economics Theory Quiz</p>
           <h1>Economics Society Academic Quiz</h1>
         </div>
-        <button id="open-settings" class="ghost-button" type="button" aria-expanded="false">
-          Sources
-        </button>
+        <div class="top-actions">
+          <a
+            class="ghost-button site-link"
+            href="https://www.economicssociety.co.uk"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src="https://raw.githubusercontent.com/moretownsend/econ-society-logo/refs/heads/main/Economics_Society_Design_in_Contrast-removebg-preview.png"
+              alt="Economics Society logo"
+            />
+            <span>Economics Society</span>
+          </a>
+          <button id="open-settings" class="ghost-button" type="button" aria-expanded="false">
+            Sources
+          </button>
+        </div>
       </header>
 
       <main class="layout">
         <section class="main-stage">
-          <div class="status-card">
-            <div>
-              <p class="status-label">Current Quiz</p>
-              <p id="quiz-stamp" class="status-value">Loading weekly draw...</p>
-            </div>
-            <div class="score-chip">
-              <span>Score</span>
-              <strong id="score-value">0 / 15</strong>
-            </div>
-          </div>
-
           <section class="lifelines" aria-label="Lifelines">
             <button id="lifeline-fifty" class="lifeline" type="button">50:50</button>
             <button id="lifeline-audience" class="lifeline" type="button">Ask the Market</button>
@@ -95,15 +98,7 @@
           <section id="review-list" class="review-list hidden"></section>
         </section>
 
-        <aside class="side-panel">
-          <section class="history-panel">
-            <div class="panel-heading">
-              <p class="status-label">Attempt History</p>
-              <button id="export-history" class="ghost-button small" type="button">Export JSON</button>
-            </div>
-            <div id="history-list" class="history-list"></div>
-          </section>
-        </aside>
+        <aside class="side-panel"></aside>
       </main>
     </div>
 
@@ -138,8 +133,8 @@
         });
       }
     </script>
-    <script src="./data/papers.js?v=20260410b"></script>
-    <script src="./data/questions.js?v=20260410b"></script>
-    <script type="module" src="./assets/app.js?v=20260410b"></script>
+    <script src="./data/papers.js?v=20260410c"></script>
+    <script src="./data/questions.js?v=20260410c"></script>
+    <script type="module" src="./assets/app.js?v=20260410c"></script>
   </body>
 </html>

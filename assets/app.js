@@ -2,7 +2,8 @@ const QUIZ_LENGTH = 15;
 const STORAGE_KEYS = {
   attempts: "econ-millionaire-attempts",
   sourcePrefs: "econ-millionaire-source-prefs",
-  flags: "econ-millionaire-flags"
+  flags: "econ-millionaire-flags",
+  currentRun: "econ-millionaire-current-run"
 };
 const LADDER = Array.from({ length: QUIZ_LENGTH }, (_, index) => `${index + 1}`);
 
@@ -35,14 +36,11 @@ const el = {
   nextQuestion: document.querySelector("#next-question"),
   questionText: document.querySelector("#question-text"),
   questionCount: document.querySelector("#question-count"),
-  scoreValue: document.querySelector("#score-value"),
   resultsCard: document.querySelector("#results-card"),
   resultsHeading: document.querySelector("#results-heading"),
   resultsSummary: document.querySelector("#results-summary"),
   reviewList: document.querySelector("#review-list"),
-  historyList: document.querySelector("#history-list"),
   ladderList: document.querySelector("#ladder-list"),
-  quizStamp: document.querySelector("#quiz-stamp"),
   openSettings: document.querySelector("#open-settings"),
   settingsDialog: document.querySelector("#settings-dialog"),
   sourceList: document.querySelector("#source-list"),
@@ -50,7 +48,6 @@ const el = {
   flagQuestion: document.querySelector("#flag-question"),
   reviewAttempt: document.querySelector("#review-attempt"),
   installApp: document.querySelector("#install-app"),
-  exportHistory: document.querySelector("#export-history"),
   lifelineFifty: document.querySelector("#lifeline-fifty"),
   lifelineAudience: document.querySelector("#lifeline-audience"),
   lifelineSwitch: document.querySelector("#lifeline-switch"),
@@ -74,7 +71,6 @@ async function boot() {
   setupEvents();
   await registerPwa();
   startWeeklyQuiz();
-  renderHistory();
 }
 
 async function fetchJSON(path) {
@@ -120,7 +116,6 @@ function setupEvents() {
   });
   el.flagQuestion.addEventListener("click", flagCurrentQuestion);
   el.reviewAttempt.addEventListener("click", renderReview);
-  el.exportHistory.addEventListener("click", exportHistory);
   el.lifelineFifty.addEventListener("click", useFiftyFifty);
   el.lifelineAudience.addEventListener("click", useAudiencePoll);
   el.lifelineSwitch.addEventListener("click", useSwitchQuestion);
@@ -143,7 +138,6 @@ function setupEvents() {
 
 function startWeeklyQuiz() {
   state.currentQuizId = currentQuizId();
-  el.quizStamp.textContent = `Week of ${formatWeekLabel()} • ${state.currentQuizId}`;
   const previousAttempt = getAttempts().find((attempt) => attempt.quizId === state.currentQuizId);
   if (previousAttempt) {
     lockToPreviousAttempt(previousAttempt);
@@ -163,30 +157,36 @@ function currentQuizId() {
   return `quiz-${current.toISOString().slice(0, 10)}`;
 }
 
-function formatWeekLabel() {
-  const [_, date] = currentQuizId().split("quiz-");
-  return new Date(date).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  });
-}
-
 function buildWeeklyQuestionSet() {
+  const storedRun = getStoredCurrentRun();
+  if (storedRun && storedRun.quizId === state.currentQuizId) {
+    const restoredQuestions = storedRun.questionIds
+      .map((id) => state.allQuestions.find((question) => question.id === id))
+      .filter(Boolean);
+    if (restoredQuestions.length === QUIZ_LENGTH) {
+      return restoredQuestions;
+    }
+  }
+
   const enabledQuestions = state.allQuestions.filter((question) =>
     state.enabledPaperIds.has(question.paperId)
   );
-  const deduped = [...enabledQuestions];
-  const seeded = seededShuffle(deduped, state.currentQuizId);
-  return seeded.slice(0, QUIZ_LENGTH);
+  const shuffled = randomShuffle([...enabledQuestions]);
+  const selected = shuffled.slice(0, QUIZ_LENGTH);
+  localStorage.setItem(
+    STORAGE_KEYS.currentRun,
+    JSON.stringify({
+      quizId: state.currentQuizId,
+      questionIds: selected.map((question) => question.id)
+    })
+  );
+  return selected;
 }
 
-function seededShuffle(items, seedString) {
-  const seed = hashCode(seedString);
+function randomShuffle(items) {
   const copy = [...items];
-  let random = mulberry32(seed);
   for (let index = copy.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(random() * (index + 1));
+    const swapIndex = Math.floor(Math.random() * (index + 1));
     [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
   }
   return copy;
@@ -205,14 +205,13 @@ function renderQuestion() {
   el.answerGrid.innerHTML = "";
   el.questionCount.textContent = `Question ${state.currentIndex + 1} of ${QUIZ_LENGTH}`;
   el.questionText.textContent = question.prompt;
-  el.scoreValue.textContent = `${state.score} / ${QUIZ_LENGTH}`;
   updateLadder();
 
   question.answers.forEach((answer, index) => {
     const node = el.answerTemplate.content.firstElementChild.cloneNode(true);
     node.dataset.answerId = answer.id;
     node.querySelector(".answer-letter").textContent = String.fromCharCode(65 + index);
-    node.querySelector(".answer-text").textContent = answer.text;
+    node.querySelector(".answer-text").textContent = toTitleCase(answer.text);
     node.addEventListener("click", () => submitAnswer(answer.id));
     el.answerGrid.appendChild(node);
   });
@@ -318,7 +317,6 @@ function finishQuiz() {
   };
 
   saveAttempt(attempt);
-  renderHistory();
   el.resultsCard.classList.remove("hidden");
   el.resultsHeading.textContent = `Your score is ${state.score} / ${QUIZ_LENGTH}`;
   el.resultsSummary.textContent =
@@ -354,28 +352,6 @@ function renderReview() {
     .join("");
 }
 
-function renderHistory() {
-  const attempts = getAttempts().sort((a, b) => b.completedAt.localeCompare(a.completedAt));
-  if (!attempts.length) {
-    el.historyList.innerHTML = "<p>No attempts saved on this device yet.</p>";
-    return;
-  }
-
-  el.historyList.innerHTML = attempts
-    .map(
-      (attempt) => `
-        <article class="history-item">
-          <div>
-            <p>${new Date(attempt.completedAt).toLocaleString()}</p>
-            <p>${attempt.quizId}</p>
-          </div>
-          <strong>${attempt.score} / ${attempt.total}</strong>
-        </article>
-      `
-    )
-    .join("");
-}
-
 function renderLadder() {
   el.ladderList.innerHTML = LADDER.map((item, index) => `<li data-step="${index}">${item}</li>`).join("");
 }
@@ -388,7 +364,7 @@ function updateLadder() {
 
 function renderSources() {
   const enabledCount = state.enabledPaperIds.size;
-  el.sourceSummary.textContent = `${enabledCount} papers enabled • ${state.allQuestions.length} generated starter questions`;
+  el.sourceSummary.textContent = `${enabledCount} papers enabled • ${state.allQuestions.length} generated questions`;
   el.sourceList.innerHTML = state.allPapers
     .map(
       (paper) => `
@@ -415,6 +391,7 @@ function renderSources() {
         state.enabledPaperIds.delete(paperId);
       }
       localStorage.setItem(STORAGE_KEYS.sourcePrefs, JSON.stringify([...state.enabledPaperIds]));
+      localStorage.removeItem(STORAGE_KEYS.currentRun);
       renderSources();
       startWeeklyQuiz();
     });
@@ -425,12 +402,10 @@ function lockToPreviousAttempt(attempt) {
   el.questionText.textContent = "This week's quiz has already been completed on this device.";
   el.answerGrid.innerHTML = "";
   el.questionCount.textContent = `Question ${QUIZ_LENGTH} of ${QUIZ_LENGTH}`;
-  el.scoreValue.textContent = `${attempt.score} / ${attempt.total}`;
   el.feedbackCard.classList.add("hidden");
   el.resultsCard.classList.remove("hidden");
   el.resultsHeading.textContent = `Your stored score is ${attempt.score} / ${attempt.total}`;
   el.resultsSummary.textContent = "One attempt per weekly quiz is enabled. You can review the saved answers below.";
-  renderHistory();
   renderReview();
   disableLifelines();
 }
@@ -473,7 +448,7 @@ function useFiftyFifty() {
     const answer = currentQuestion().answers.find((item) => item.id === button.dataset.answerId);
     return !answer.correct;
   });
-  seededShuffle(wrongButtons, `${state.currentQuizId}-${state.currentIndex}-fifty`)
+  randomShuffle(wrongButtons)
     .slice(0, 2)
     .forEach((button) => button.classList.add("is-hidden"));
   state.lifelines.fifty = false;
@@ -515,7 +490,7 @@ function useSwitchQuestion() {
       !state.quizQuestions.some((existing) => existing.id === question.id) &&
       question.id !== currentId
   );
-  const replacement = seededShuffle(alternatives, `${state.currentQuizId}-${state.currentIndex}-switch`)[0];
+  const replacement = randomShuffle(alternatives)[0];
   if (!replacement) {
     return;
   }
@@ -582,38 +557,10 @@ function saveAttempt(attempt) {
   localStorage.setItem(STORAGE_KEYS.attempts, JSON.stringify(attempts));
 }
 
-function exportHistory() {
-  const blob = new Blob([JSON.stringify(getAttempts(), null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = "econ-millionaire-attempt-history.json";
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
-
 async function registerPwa() {
   if ("serviceWorker" in navigator && window.location.protocol !== "file:") {
     await navigator.serviceWorker.register("./sw.js");
   }
-}
-
-function hashCode(input) {
-  let hash = 0;
-  for (let index = 0; index < input.length; index += 1) {
-    hash = (hash << 5) - hash + input.charCodeAt(index);
-    hash |= 0;
-  }
-  return hash >>> 0;
-}
-
-function mulberry32(seed) {
-  return function next() {
-    let t = (seed += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }
 
 function escapeHtml(input) {
@@ -623,4 +570,12 @@ function escapeHtml(input) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function getStoredCurrentRun() {
+  return JSON.parse(localStorage.getItem(STORAGE_KEYS.currentRun) || "null");
+}
+
+function toTitleCase(input) {
+  return String(input).replace(/\b([a-z])/g, (match) => match.toUpperCase());
 }
